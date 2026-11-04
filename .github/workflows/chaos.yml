@@ -1,0 +1,45 @@
+name: Chaos checks
+
+# Simulation only: runs CareChaos against a model of the outgoing-webhook retry settings (see chaos/README.md).
+on:
+  push:
+    branches:
+      - main
+    paths: &paths
+      - "chaos/**"
+      - "backend/app/integrations/celery/tasks/emit_webhook_event_task.py"
+      - "backend/app/services/outgoing_webhooks/**"
+      - ".github/workflows/chaos.yml"
+  pull_request:
+    paths: *paths
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  webhook-resilience:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Webhooks survive a short Svix outage (blocking)
+        # Pinned to a commit; bump when CareChaos releases a tag that includes pipeline.deadLetterRedrive.
+        uses: batool-fariha/carechaos@417b9ca680da4489bd1ba1b0b0a12440d9fcc889
+        with:
+          files: chaos/webhook-short-outage.json
+          junit: chaos-short.xml
+
+      - name: Webhooks during a long Svix outage (informational)
+        continue-on-error: true
+        uses: batool-fariha/carechaos@417b9ca680da4489bd1ba1b0b0a12440d9fcc889
+        with:
+          files: chaos/webhook-long-outage.json
+          junit: chaos-long.xml
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chaos-junit
+          path: chaos-*.xml
+          if-no-files-found: ignore

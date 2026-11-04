@@ -1,0 +1,15 @@
+{
+  "name": "Outgoing webhooks during a 60 s Svix outage",
+  "scenario": "alert-service-outage",
+  "pipeline": {
+    "retry": { "maxRetries": 2, "baseSec": 5, "capSec": 5 },
+    "deadLetterRedrive": false
+  },
+  "faults": [
+    { "type": "outage", "target": "delivery", "startSec": 60, "durationSec": 60, "intensity": 1, "delaySec": 0 }
+  ],
+  "assertions": [
+    { "kind": "processed_after_recovery", "title": "Events raised during the outage are delivered after it ends" },
+    { "kind": "no_unexpected_loss", "title": "No webhook event is lost" }
+  ]
+}
