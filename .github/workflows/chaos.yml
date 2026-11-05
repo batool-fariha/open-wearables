@@ -24,15 +24,15 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Webhooks survive a short Svix outage (blocking)
-        # Pinned to a commit; bump when CareChaos releases a tag that includes pipeline.deadLetterRedrive.
-        uses: batool-fariha/carechaos@417b9ca680da4489bd1ba1b0b0a12440d9fcc889
+        # Pinned to a release tag (v0.1.1+ includes pipeline.deadLetterRedrive).
+        uses: batool-fariha/carechaos@v0.1.2
         with:
           files: chaos/webhook-short-outage.json
           junit: chaos-short.xml
 
       - name: Webhooks during a long Svix outage (informational)
         continue-on-error: true
-        uses: batool-fariha/carechaos@417b9ca680da4489bd1ba1b0b0a12440d9fcc889
+        uses: batool-fariha/carechaos@v0.1.2
         with:
           files: chaos/webhook-long-outage.json
           junit: chaos-long.xml
